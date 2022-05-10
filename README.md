@@ -2,7 +2,6 @@
 #### 💻 FTP Terminal, that allows you:
 ##### 📁 Manage files on FTP.
 
-[========]
 
 ###### There is some examples:
 ```bash
@@ -11,15 +10,11 @@ connect IamHost.com;Example;Yeah; # (Host;Login;Password;)
 dir
 ```
 
-[========]
 
 ###### Actual version is **1.0**
 
-[========]
 
 ##### Also you can make boot script (on starting console)
-
-[========]
 
 > ### TODO:
 
