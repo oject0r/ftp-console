@@ -2,6 +2,7 @@ import json
 import ftplib as fl
 import os
 import requests
+import argparse as ap
 
 def start():
     print('''
@@ -14,10 +15,20 @@ def start():
 By OJector
     ''')
     input('Press any key, to continue')
-    os.system('cls')
+
+    if os.name == 'nt': # for windows
+      os.system('cls')
+    else: # for mac and linux
+      os.system('clear')
 preprefix = '' # yeah, it's prefix before prefix
 
 connection = None # connection object storage
+hostgl = ''
+
+parser = ap.ArgumentParser() # parse arguments
+parser.add_argument('-cmd', dest='command', required=False)
+parser.add_argument('-f', dest='file', required=False)
+args = parser.parse_args()
 
 def check_for_exists(file): # here we check file for existing on server
     flist = connection.nlst() # get file list
@@ -29,7 +40,7 @@ def check_for_exists(file): # here we check file for existing on server
 def main(cmd):
     global preprefix
     global connection
-
+    global hostgl
     if cmd.startswith('connect'):
         if connection == None:
             command = cmd.split(';') # argument splitter
@@ -41,7 +52,9 @@ def main(cmd):
                     connection = fl.FTP()
                     connection.connect(host, 21)# create connection
                     connection.login(login,password) # login
-                    preprefix = f'{host}/{login}'
+                    preprefix = f'{host}/'
+                    hostgl = host
+                    print(f'Connected successfully to {host} as {login}')
                 except Exception as e: # if something went wrong, we catch this
                     print('Error occured, while trying to connect ('+str(e)+')')
             else:
@@ -52,6 +65,8 @@ def main(cmd):
         if connection != None:
             preprefix = ''
             connection = None
+            hostgl = None
+            print(f'Disconnected successfully from "{hostgl}"')
         else:
             print('Allready disconnected')
     elif cmd.startswith('echo'): # echo command (print)
@@ -159,10 +174,12 @@ def main(cmd):
                 if a != '..':
                     if check_for_exists(a):
                         connection.cwd(a)
+                        preprefix = f'{hostgl}{str(connection.pwd())}'
                     else:
                         print('Directory not found')
                 else:
                     connection.cwd(a)
+                    preprefix = f'{hostgl}{str(connection.pwd())}'
             else:
                 print('Missing required arguments.')
         else:
@@ -214,13 +231,33 @@ rmdir (dirname) - Delete directory (folder)
     else: # if command not found
         print('Command not found')
 
-if os.path.exists('OnBoot.ftp'): # if we has On Boot file
-    with open('OnBoot.ftp', 'r') as f: # open file and split it
-        cmdlist = f.read().replace('\n','').split('$')
-    for CMD in cmdlist: # for loop
-        main(CMD) # execute command
 
-start()
-while True:
-    Cmd = input(preprefix+'$') # ask user for a command
-    main(Cmd)
+
+
+if not args.command: # if we didn't got the command from terminal
+    if os.path.exists('OnBoot.ftp'): # if we has On Boot file
+        with open('OnBoot.ftp', 'r') as f: # open file and split it
+            cmdlist = f.read().replace('\n','').split('$')
+        print('On Boot Logs {') # logging for on boot
+        for CMD in cmdlist: # for loop
+
+            main(CMD) # execute command
+        print('}')
+    start()
+    if not args.file:
+        while True:
+            Cmd = input(preprefix+'>') # ask user for a command
+            main(Cmd)
+    else:
+        if os.path.exists(args.file):
+            with open(args.file, 'r') as f:
+                cmdlist = f.read().replace('\n','').split('$')
+            for CMD in cmdlist: # for loop
+                main(CMD) # execute command
+        else:
+            print('Not find filename')
+else: # if we got the command from terminal
+    cmdlist = args.command
+    cmdlist = cmdlist.split('$')
+    for Cmd in cmdlist:
+        main(Cmd)
