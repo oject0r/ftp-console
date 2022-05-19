@@ -11,15 +11,12 @@ dir
 ```
 
 
-###### Actual version is **1.0**
+###### Actual version is **1.0.1**
 
 
 ##### Also you can make boot script (on starting console)
 
 > ### TODO:
-
-> #### In 1.0.1 add:
-1. Argparse arguments
 
 > #### In 1.1 add:
 1. Graphic interface
